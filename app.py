@@ -45,7 +45,7 @@ if IS_COLAB:
         sys.exit()
 
 else:
-    print(f"💻 偵測到環境：Local ({sys.platform})")
+    print(f" 偵測到環境：Local ({sys.platform})")
     # 本機環境 (Windows / macOS)
     try:
         Curr_Path = os.path.dirname(os.path.abspath(__file__))
