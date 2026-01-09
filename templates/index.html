@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>藥品進存貨系統</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .card { box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        /* 避免 Vue 尚未載入時顯示未編譯的標籤 */
+        [v-cloak] { display: none; }
+    </style>
+</head>
+<body>
+
+<div id="app" class="container py-5" v-cloak>
+    <div class="text-center mb-5">
+        <h1 class="display-5 fw-bold text-primary">🏥 藥品進存貨管理系統</h1>
+        <p class="lead text-muted">簡易 CRUD 示範專案</p>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="mb-0">庫存列表</h3>
+        <button class="btn btn-success" @click="openModal('add')">
+            + 新增藥品
+        </button>
+    </div>
+
+    <div class="card bg-white">
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0 text-center align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>藥品名稱</th>
+                        <th>類別</th>
+                        <th>價格</th>
+                        <th>庫存量</th>
+                        <th>有效期限</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-if="medicines.length === 0">
+                        <td colspan="7" class="text-muted py-4">目前沒有資料，請新增藥品。</td>
+                    </tr>
+                    <tr v-for="item in medicines" :key="item.id">
+                        <td>[[ item.id ]]</td>
+                        <td class="fw-bold text-start">[[ item.name ]]</td>
+                        <td><span class="badge bg-secondary rounded-pill">[[ item.category ]]</span></td>
+                        <td>$[[ item.price ]]</td>
+                        <td>
+                            <span :class="{'text-danger fw-bold': item.stock < 10, 'text-success': item.stock >= 10}">
+                                [[ item.stock ]]
+                            </span>
+                        </td>
+                        <td>[[ item.expiry_date ]]</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary me-2" @click="openModal('edit', item)">編輯</button>
+                            <button class="btn btn-sm btn-outline-danger" @click="confirmDelete(item.id)">刪除</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal fade" id="medicineModal" tabindex="-1" aria-hidden="true" ref="medicineModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">[[ isEditMode ? '編輯藥品' : '新增藥品' ]]</h5>
+                    <button type="button" class="btn-close" @click="closeModal"></button>
+                </div>
+                <div class="modal-body">
+                    <form @submit.prevent="submitForm">
+                        <div class="mb-3">
+                            <label class="form-label">藥品名稱</label>
+                            <input type="text" class="form-control" v-model="form.name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">類別</label>
+                            <select class="form-select" v-model="form.category">
+                                <option value="抗生素">抗生素</option>
+                                <option value="止痛藥">止痛藥</option>
+                                <option value="維他命">維他命</option>
+                                <option value="心血管">心血管</option>
+                                <option value="外用藥">外用藥</option>
+                                <option value="其他">其他</option>
+                            </select>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">價格</label>
+                                <input type="number" class="form-control" v-model.number="form.price" min="0" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">庫存量</label>
+                                <input type="number" class="form-control" v-model.number="form.stock" min="0" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">有效期限</label>
+                            <input type="date" class="form-control" v-model="form.expiry_date" required>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">[[ isEditMode ? '更新資料' : '確認新增' ]]</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    const { createApp } = Vue;
+
+    createApp({
+        // 關鍵設定：修改 Vue 的分隔符號，改用方括號
+        delimiters: ['[[', ']]'],
+
+        data() {
+            return {
+                medicines: [],
+                isEditMode: false,
+                modalInstance: null,
+                form: {
+                    id: null,
+                    name: '',
+                    category: '其他',
+                    price: 0,
+                    stock: 0,
+                    expiry_date: ''
+                }
+            };
+        },
+        mounted() {
+            this.fetchMedicines();
+            this.modalInstance = new bootstrap.Modal(this.$refs.medicineModal);
+        },
+        methods: {
+            async fetchMedicines() {
+                try {
+                    const res = await fetch('/api/medicines');
+                    const data = await res.json();
+                    if (data.status === 'success') {
+                        this.medicines = data.data;
+                    }
+                } catch (error) {
+                    alert('資料載入失敗');
+                }
+            },
+            openModal(mode, item = null) {
+                this.isEditMode = (mode === 'edit');
+                if (this.isEditMode && item) {
+                    this.form = { ...item };
+                } else {
+                    this.resetForm();
+                }
+                this.modalInstance.show();
+            },
+            closeModal() {
+                this.modalInstance.hide();
+            },
+            resetForm() {
+                this.form = {
+                    id: null,
+                    name: '',
+                    category: '其他',
+                    price: 0,
+                    stock: 0,
+                    expiry_date: ''
+                };
+            },
+            async submitForm() {
+                const url = this.isEditMode
+                    ? `/api/medicines/${this.form.id}`
+                    : '/api/medicines';
+
+                const method = this.isEditMode ? 'PUT' : 'POST';
+
+                try {
+                    const res = await fetch(url, {
+                        method: method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(this.form)
+                    });
+                    const result = await res.json();
+
+                    if (res.ok) {
+                        this.closeModal();
+                        this.fetchMedicines();
+                    } else {
+                        alert(result.message);
+                    }
+                } catch (error) {
+                    alert('操作失敗，請檢查網路或後端');
+                }
+            },
+            async confirmDelete(id) {
+                if (!confirm('確定要刪除這項藥品資料嗎？')) return;
+
+                try {
+                    const res = await fetch(`/api/medicines/${id}`, {
+                        method: 'DELETE'
+                    });
+                    if (res.ok) {
+                        this.fetchMedicines();
+                    } else {
+                        alert('刪除失敗');
+                    }
+                } catch (error) {
+                    alert('刪除請求失敗');
+                }
+            }
+        }
+    }).mount('#app');
+</script>
+
+</body>
+</html>
