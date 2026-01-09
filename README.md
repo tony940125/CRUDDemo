@@ -79,7 +79,7 @@ sequenceDiagram
 ```
 ### 影片連結
 
-<video src="video_實作.mp4" controls="controls" style="max-width: 730px;">
+<video src="assets/video_實作.mp4" controls="controls" style="max-width: 730px;">
 </video>
 
 ---
