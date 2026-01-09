@@ -80,10 +80,10 @@ sequenceDiagram
 ### 影片連結
 
 #### 系統說明
-[![Watch the video](assets/video_readme.jpg)](https://drive.google.com/file/d/1vTlrziDQd4En3e1vh-yrQzqCy63AJzIY/view?usp=drive_link))
+[![Watch the video](assets/video_readme.jpg)](https://drive.google.com/file/d/1vTlrziDQd4En3e1vh-yrQzqCy63AJzIY/view?usp=drive_link)
 
 #### 系統實際操作
-[![Watch the video](assets/video_demo.jpg)]([https://drive.google.com/file/d/1Ja4KrgTbcSR38UxoDxXYxv0YA6krpuDh/view?usp=sharing](https://drive.google.com/file/d/1Ja4KrgTbcSR38UxoDxXYxv0YA6krpuDh/view?usp=drive_link))
+[![Watch the video](assets/video_demo.jpg)](https://drive.google.com/file/d/1Ja4KrgTbcSR38UxoDxXYxv0YA6krpuDh/view?usp=drive_link)
 
 ---
 
