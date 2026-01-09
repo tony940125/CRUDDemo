@@ -54,12 +54,12 @@
 ```mermaid
 graph TD
     User((使用者))
-    Frontend[前端介面 (Vue.js + Bootstrap)]
-    Backend[後端伺服器 (Flask API)]
+    Frontend[前端介面 -Vue.js + Bootstrap-]
+    Backend[後端伺服器 -Flask API-]
     Database[(SQLite 資料庫)]
 
     User -- 操作介面 --> Frontend
-    Frontend -- HTTP Request (JSON) --> Backend
+    Frontend -- HTTP Request -JSON- --> Backend
     Backend -- SQL Query --> Database
     Database -- Return Data --> Backend
     Backend -- JSON Response --> Frontend
